@@ -13,6 +13,10 @@ import (
 var cfgFile string
 var scoperInstance *scopious.Scoper
 
+func SetVersionInfo(versionStr, commitStr string) {
+	rootCmd.Version = fmt.Sprintf("%s-%s", versionStr, commitStr)
+}
+
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "scopious",
