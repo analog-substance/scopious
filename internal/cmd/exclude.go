@@ -37,7 +37,6 @@ in a CIDR is in scope.
 			scanner := bufio.NewScanner(os.Stdin)
 			for scanner.Scan() {
 				scopeLine := scanner.Text()
-				log.Println(scopeLine)
 				scope.AddExclude(scopeLine)
 			}
 

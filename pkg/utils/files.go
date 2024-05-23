@@ -3,7 +3,6 @@ package utils
 import (
 	"bufio"
 	"io/fs"
-	"log"
 	"os"
 	"strings"
 )
@@ -91,22 +90,5 @@ func Mkdir(dirs ...string) []error {
 }
 
 func WriteLines(path string, lines []string) error {
-
-	log.Println(path)
-
 	return os.WriteFile(path, []byte(strings.Join(lines, "\n")+"\n"), DefaultFilePerms)
-	//file, err := os.OpenFile(path, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, DefaultFilePerms)
-	//if err != nil {
-	//	return err
-	//}
-	//defer file.Close()
-	//
-	//writer := bufio.NewWriter(file)
-	//for _, data := range lines {
-	//	_, err = writer.WriteString(data + "\n")
-	//	log.Println(err)
-	//}
-	//
-	//writer.Flush()
-	//return nil
 }

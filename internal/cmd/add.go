@@ -28,7 +28,6 @@ var addCmd = &cobra.Command{
 			scanner := bufio.NewScanner(os.Stdin)
 			for scanner.Scan() {
 				scopeLine := scanner.Text()
-				log.Println(scopeLine)
 				scope.Add(scopeLine)
 			}
 

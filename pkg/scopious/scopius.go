@@ -2,6 +2,7 @@ package scopious
 
 import (
 	"fmt"
+	"github.com/analog-substance/scopious/internal/state"
 	"github.com/analog-substance/scopious/pkg/utils"
 	"golang.org/x/net/publicsuffix"
 	"log"
@@ -146,22 +147,22 @@ func (s *Scope) Load() {
 
 func (s *Scope) Save() {
 	err := utils.WriteLines(filepath.Join(s.Path, scopeFileIPv4), sortedScopeKeys(s.IPv4))
-	if err != nil {
+	if err != nil && state.Debug {
 		log.Println("error saving IPv4:", err)
 	}
 
 	err = utils.WriteLines(filepath.Join(s.Path, scopeFileIPv6), sortedScopeKeys(s.IPv6))
-	if err != nil {
+	if err != nil && state.Debug {
 		log.Println("error saving IPv6:", err)
 	}
 
 	err = utils.WriteLines(filepath.Join(s.Path, scopeFileDomains), sortedScopeKeys(s.Domains))
-	if err != nil {
+	if err != nil && state.Debug {
 		log.Println("error saving Domains:", err)
 	}
 
 	err = utils.WriteLines(filepath.Join(s.Path, scopeFileExclude), sortedScopeKeys(s.Excludes))
-	if err != nil {
+	if err != nil && state.Debug {
 		log.Println("error saving Excludes:", err)
 	}
 }
@@ -178,7 +179,9 @@ func (s *Scope) Add(scopeItems ...string) {
 			// perhaps we have a CIDR
 			_, err := utils.GetAllIPs(scopeItem)
 			if err != nil {
-				log.Println("error processing cidr", err)
+				if state.Debug {
+					log.Println("error processing cidr", err)
+				}
 				continue
 			}
 
