@@ -60,7 +60,7 @@ func TestScope_Add_IPv4(t *testing.T) {
 				IPv6:        tt.fields.IPv6,
 				Excludes:    tt.fields.Exclude,
 			}
-			s.Add(tt.args.scopeItems...)
+			s.Add(false, tt.args.scopeItems...)
 
 			if got := s.IPv4; !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("IPv4 = %v, want %v", got, tt.want)
@@ -123,7 +123,7 @@ func TestScope_Add_Domains(t *testing.T) {
 				IPv6:        tt.fields.IPv6,
 				Excludes:    tt.fields.Exclude,
 			}
-			s.Add(tt.args.scopeItems...)
+			s.Add(false, tt.args.scopeItems...)
 
 			if got := s.Domains; !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Domains = %v, want %v", got, tt.want)
@@ -186,7 +186,7 @@ func TestScope_Add_IPv6(t *testing.T) {
 				IPv6:        tt.fields.IPv6,
 				Excludes:    tt.fields.Exclude,
 			}
-			s.Add(tt.args.scopeItems...)
+			s.Add(false, tt.args.scopeItems...)
 
 			if got := s.IPv6; !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("IPv6 = %v, want %v", got, tt.want)
@@ -298,7 +298,7 @@ func TestScope_Prune(t *testing.T) {
 				IPv6:        tt.fields.IPv6,
 				Excludes:    tt.fields.Excludes,
 			}
-			got := s.Prune(tt.args.scopeItemsToCheck...)
+			got := s.Prune(false, tt.args.scopeItemsToCheck...)
 
 			if len(got) != len(tt.want) {
 				t.Errorf("Prune returned wrong length: got:%v, wanted:%v", got, tt.want)

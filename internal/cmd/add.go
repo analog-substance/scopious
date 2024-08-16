@@ -2,9 +2,10 @@ package cmd
 
 import (
 	"bufio"
-	"github.com/spf13/cobra"
 	"log"
 	"os"
+
+	"github.com/spf13/cobra"
 )
 
 // addCmd represents the add command
@@ -19,16 +20,17 @@ var addCmd = &cobra.Command{
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		scopeName, _ := cmd.Flags().GetString("scope")
+		all, _ := cmd.Flags().GetBool("all")
 		scope := scoperInstance.GetScope(scopeName)
 
 		if len(args) > 0 {
-			scope.Add(args...)
+			scope.Add(all, args...)
 		} else {
 			// no args, lets read from stdin
 			scanner := bufio.NewScanner(os.Stdin)
 			for scanner.Scan() {
 				scopeLine := scanner.Text()
-				scope.Add(scopeLine)
+				scope.Add(all, scopeLine)
 			}
 
 			if scanner.Err() != nil {
@@ -42,14 +44,5 @@ var addCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(addCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	//addCmd.PersistentFlags().StringP("scope", "s", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// addCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	addCmd.PersistentFlags().BoolP("all", "a", false, "show all addreses, even network and broadcast")
 }
