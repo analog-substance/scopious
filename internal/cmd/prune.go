@@ -3,9 +3,10 @@ package cmd
 import (
 	"bufio"
 	"fmt"
-	"github.com/spf13/cobra"
 	"log"
 	"os"
+
+	"github.com/spf13/cobra"
 )
 
 // pruneCmd represents the check command
@@ -18,6 +19,7 @@ cat urls.txt | scopious prune
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		scopeName, _ := cmd.Flags().GetString("scope")
+		all, _ := cmd.Flags().GetBool("all")
 		scope := scoperInstance.GetScope(scopeName)
 
 		scopeToCheck := []string{}
@@ -30,7 +32,7 @@ cat urls.txt | scopious prune
 		if scanner.Err() != nil {
 			log.Printf("STDIN scanner encountered an error: %s", scanner.Err())
 		}
-		prunedScope := scope.Prune(scopeToCheck...)
+		prunedScope := scope.Prune(all, scopeToCheck...)
 
 		//sort.Strings(prunedScope)
 
@@ -42,14 +44,5 @@ cat urls.txt | scopious prune
 
 func init() {
 	rootCmd.AddCommand(pruneCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// pruneCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// pruneCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	pruneCmd.PersistentFlags().BoolP("all", "a", false, "show all addreses, even network and broadcast")
 }

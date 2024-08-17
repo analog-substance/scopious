@@ -3,11 +3,12 @@ package cmd
 import (
 	"bufio"
 	"fmt"
-	"github.com/analog-substance/scopious/pkg/utils"
-	"github.com/spf13/cobra"
 	"log"
 	"os"
 	"strings"
+
+	"github.com/analog-substance/scopious/pkg/utils"
+	"github.com/spf13/cobra"
 )
 
 var expandCmd = &cobra.Command{
@@ -21,16 +22,18 @@ var expandCmd = &cobra.Command{
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 
+		all, _ := cmd.Flags().GetBool("all")
+
 		if len(args) > 0 {
 			for _, scopeLine := range args {
-				processScopeLine(scopeLine)
+				processScopeLine(scopeLine, all)
 			}
 		} else {
 			// no args, lets read from stdin
 			scanner := bufio.NewScanner(os.Stdin)
 			for scanner.Scan() {
 				scopeLine := scanner.Text()
-				processScopeLine(scopeLine)
+				processScopeLine(scopeLine, all)
 			}
 
 			if scanner.Err() != nil {
@@ -40,10 +43,10 @@ var expandCmd = &cobra.Command{
 	},
 }
 
-func processScopeLine(scopeLine string) {
+func processScopeLine(scopeLine string, all bool) {
 	if strings.Contains(scopeLine, "/") {
 		// perhaps we have a CIDR
-		ips, err := utils.GetAllIPs(scopeLine)
+		ips, err := utils.GetAllIPs(scopeLine, all)
 		if err != nil {
 			//log.Println("error processing cidr", err)
 			return
@@ -57,4 +60,5 @@ func processScopeLine(scopeLine string) {
 
 func init() {
 	rootCmd.AddCommand(expandCmd)
+	expandCmd.PersistentFlags().BoolP("all", "a", false, "show all addreses, even network and broadcast")
 }

@@ -2,7 +2,7 @@ package utils
 
 import "net"
 
-func GetAllIPs(cidr string) ([]net.IP, error) {
+func GetAllIPs(cidr string, all bool) ([]net.IP, error) {
 	ip, ipnet, err := net.ParseCIDR(cidr)
 	if err != nil {
 		ip = net.ParseIP(cidr)
@@ -19,7 +19,11 @@ func GetAllIPs(cidr string) ([]net.IP, error) {
 	if len(ips) == 1 {
 		return ips, nil
 	}
-	// remove network address and broadcast address
+
+	if all {
+		return ips, nil
+	}
+	// else remove network address and broadcast address
 	return ips[1 : len(ips)-1], nil
 }
 

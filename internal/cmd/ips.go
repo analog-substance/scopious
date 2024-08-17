@@ -2,8 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
 	"sort"
+
+	"github.com/spf13/cobra"
 )
 
 // ipsCmd represents the ips command
@@ -21,11 +22,12 @@ Expand CIDRs and remove excluded ips
 	Run: func(cmd *cobra.Command, args []string) {
 		scopeName, _ := cmd.Flags().GetString("scope")
 		shouldExpand, _ := cmd.Flags().GetBool("expand")
+		all, _ := cmd.Flags().GetBool("all")
 		scope := scoperInstance.GetScope(scopeName)
 
 		var scopeStrings []string
 		if shouldExpand {
-			scopeStrings = scope.AllExpanded()
+			scopeStrings = scope.AllExpanded(all)
 			sort.Strings(scopeStrings)
 		} else {
 			scopeStrings = scope.AllIPs()
@@ -39,14 +41,6 @@ Expand CIDRs and remove excluded ips
 
 func init() {
 	rootCmd.AddCommand(ipsCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// ipsCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
 	ipsCmd.Flags().BoolP("expand", "x", false, "Expand CIDRS and remove excluded things")
+	ipsCmd.PersistentFlags().BoolP("all", "a", false, "show all addreses, even network and broadcast")
 }

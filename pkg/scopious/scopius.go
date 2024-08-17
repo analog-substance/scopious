@@ -2,9 +2,6 @@ package scopious
 
 import (
 	"fmt"
-	"github.com/analog-substance/scopious/internal/state"
-	"github.com/analog-substance/scopious/pkg/utils"
-	"golang.org/x/net/publicsuffix"
 	"log"
 	"net"
 	"net/url"
@@ -14,6 +11,10 @@ import (
 	"slices"
 	"sort"
 	"strings"
+
+	"github.com/analog-substance/scopious/internal/state"
+	"github.com/analog-substance/scopious/pkg/utils"
+	"golang.org/x/net/publicsuffix"
 )
 
 const DefaultScopeDir = "scope"
@@ -167,7 +168,7 @@ func (s *Scope) Save() {
 	}
 }
 
-func (s *Scope) Add(scopeItems ...string) {
+func (s *Scope) Add(all bool, scopeItems ...string) {
 
 	for _, scopeItem := range scopeItems {
 		scopeItem = normalizedScope(scopeItem)
@@ -177,7 +178,7 @@ func (s *Scope) Add(scopeItems ...string) {
 
 		if strings.Contains(scopeItem, "/") {
 			// perhaps we have a CIDR
-			_, err := utils.GetAllIPs(scopeItem)
+			_, err := utils.GetAllIPs(scopeItem, all)
 			if err != nil {
 				if state.Debug {
 					log.Println("error processing cidr", err)
@@ -224,7 +225,7 @@ func (s *Scope) AddExclude(scopeItems ...string) {
 	}
 }
 
-func (s *Scope) Prune(scopeItemsToCheck ...string) []string {
+func (s *Scope) Prune(all bool, scopeItemsToCheck ...string) []string {
 
 	scopeCheckResults := map[string]bool{}
 
@@ -235,7 +236,7 @@ func (s *Scope) Prune(scopeItemsToCheck ...string) []string {
 
 	includeCIDRs := append(includeIPv4CIDRs, includeIPv6CIDRs...)
 	includeIPAddrs := append(includeIPv4Addrs, includeIPv6Addrs...)
-	expandedIPs, ipAddrsToCheck, domainStrsToCheck := normalizeAndExpandStringSlice(scopeItemsToCheck)
+	expandedIPs, ipAddrsToCheck, domainStrsToCheck := normalizeAndExpandStringSlice(scopeItemsToCheck, all)
 
 	scopeItemsToCheck = append(scopeItemsToCheck, expandedIPs...)
 CheckIpAddr:
@@ -328,8 +329,8 @@ CheckDomains:
 	return prunedResults
 }
 
-func (s *Scope) AllExpanded() []string {
-	return s.Prune(s.AllIPs()...)
+func (s *Scope) AllExpanded(all bool) []string {
+	return s.Prune(all, s.AllIPs()...)
 }
 
 func (s *Scope) AllIPs() []string {
@@ -352,10 +353,10 @@ func (s *Scope) AllDomains() []string {
 	return sortedScopeKeys(s.Domains)
 }
 
-func getExpandedCIDRSFromScopeMap(scopeMap map[string]bool) []net.IP {
+func getExpandedCIDRSFromScopeMap(scopeMap map[string]bool, all bool) []net.IP {
 	allScopeIPs := []net.IP{}
 	for inScopeStr, _ := range scopeMap {
-		inScopeIPaddrs, err := utils.GetAllIPs(inScopeStr)
+		inScopeIPaddrs, err := utils.GetAllIPs(inScopeStr, all)
 		if err == nil {
 			allScopeIPs = append(allScopeIPs, inScopeIPaddrs...)
 		}
@@ -399,14 +400,14 @@ func normalizedScope(scopeItem string) string {
 	return ""
 }
 
-func normalizeAndExpandStringSlice(scopeItemsToCheck []string) (expandedIPs []string, normalizedIPAddrs []net.IP, normalizedHostnames []string) {
+func normalizeAndExpandStringSlice(scopeItemsToCheck []string, all bool) (expandedIPs []string, normalizedIPAddrs []net.IP, normalizedHostnames []string) {
 
 	for _, scopeToCheck := range scopeItemsToCheck {
 		normalized := normalizedScope(scopeToCheck)
 		if normalized == "" {
 			continue
 		}
-		ipAddrs, err := utils.GetAllIPs(normalized)
+		ipAddrs, err := utils.GetAllIPs(normalized, all)
 		if err == nil {
 			if strings.Contains(normalized, "/") {
 				for _, ip := range ipAddrs {
