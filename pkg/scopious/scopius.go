@@ -392,7 +392,7 @@ func normalizedScope(scopeItem string) string {
 	if err == nil {
 		// no errors, we have a URL
 		if len(parsedURL.Host) > 0 {
-			return parsedURL.Hostname()
+			return strings.TrimSuffix(parsedURL.Hostname(), ".")
 		}
 	}
 
