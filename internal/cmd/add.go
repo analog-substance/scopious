@@ -12,7 +12,7 @@ import (
 var addCmd = &cobra.Command{
 	Use:   "add",
 	Short: "Add items to scope",
-	Long: `Add items to scope. For example:
+	Long: `Add items to scope unless it has been excluded via scopius exclude. For example:
 
 	cat customer-supplied.txt | scopious add
 
