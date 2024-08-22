@@ -89,21 +89,27 @@ func (scoper *Scoper) GetScope(scopeName string) *Scope {
 }
 
 type Scope struct {
-	Path        string
-	Description string
-	IPv4        map[string]bool
-	Domains     map[string]bool
-	IPv6        map[string]bool
-	Excludes    map[string]bool
+	Path              string
+	Description       string
+	IPv4              map[string]bool
+	Domains           map[string]bool
+	IPv6              map[string]bool
+	Excludes          map[string]bool
+	excludedCIDRs     []*net.IPNet
+	excludedIPAddrs   []string
+	excludedHostnames []string
 }
 
 func NewScopeFromPath(path string) *Scope {
 	return &Scope{
-		Path:     path,
-		IPv4:     map[string]bool{},
-		IPv6:     map[string]bool{},
-		Domains:  map[string]bool{},
-		Excludes: map[string]bool{},
+		Path:              path,
+		IPv4:              map[string]bool{},
+		IPv6:              map[string]bool{},
+		Domains:           map[string]bool{},
+		Excludes:          map[string]bool{},
+		excludedCIDRs:     []*net.IPNet{},
+		excludedIPAddrs:   []string{},
+		excludedHostnames: []string{},
 	}
 }
 
@@ -141,6 +147,7 @@ func (s *Scope) Load() {
 				if err != nil {
 					panic(err)
 				}
+				s.excludedCIDRs, s.excludedIPAddrs, s.excludedHostnames = getCIDRsIPsHostname(s.Excludes)
 			}
 		}
 	}
@@ -176,6 +183,12 @@ func (s *Scope) Add(all bool, scopeItems ...string) {
 			continue
 		}
 
+		// if we have a direct match in our excludes, do not add the scope item
+		_, exists := s.Excludes[scopeItem]
+		if exists {
+			continue
+		}
+
 		if strings.Contains(scopeItem, "/") {
 			// perhaps we have a CIDR
 			_, err := utils.GetAllIPs(scopeItem, all)
@@ -204,12 +217,17 @@ func (s *Scope) Add(all bool, scopeItems ...string) {
 
 		ip := net.ParseIP(scopeItem)
 		if ip != nil {
-			s.IPv4[ip.String()] = true
+			if s.CanAddIP(ip) {
+				s.IPv4[ip.String()] = true
+			}
 			// item was an IP address, continue now to prevent useless processing
 			continue
 		}
 
-		s.Domains[scopeItem] = true
+		// not IPv6 or IPv4... must be a domain
+		if s.CanAddDomain(scopeItem) {
+			s.Domains[scopeItem] = true
+		}
 	}
 }
 
@@ -229,7 +247,6 @@ func (s *Scope) Prune(all bool, scopeItemsToCheck ...string) []string {
 
 	scopeCheckResults := map[string]bool{}
 
-	excludeCIDRs, excludeIPAddrs, excludedDomains := getCIDRsIPsHostname(s.Excludes)
 	includeIPv4CIDRs, includeIPv4Addrs, _ := getCIDRsIPsHostname(s.IPv4)
 	includeIPv6CIDRs, includeIPv6Addrs, _ := getCIDRsIPsHostname(s.IPv6)
 	_, _, includeDomains := getCIDRsIPsHostname(s.Domains)
@@ -241,17 +258,8 @@ func (s *Scope) Prune(all bool, scopeItemsToCheck ...string) []string {
 	scopeItemsToCheck = append(scopeItemsToCheck, expandedIPs...)
 CheckIpAddr:
 	for _, ipAddr := range ipAddrsToCheck {
-
-		// is IP explicitly blocked
-		if slices.Contains(excludeIPAddrs, ipAddr.String()) {
+		if !s.CanAddIP(ipAddr) {
 			continue CheckIpAddr
-		}
-
-		// is IP implicitly blocked through CIDR
-		for _, excludedCidr := range excludeCIDRs {
-			if excludedCidr.Contains(ipAddr) {
-				continue CheckIpAddr
-			}
 		}
 
 		// is IP explicitly allowed
@@ -271,17 +279,8 @@ CheckIpAddr:
 
 CheckDomains:
 	for _, domainToCheck := range domainStrsToCheck {
-
-		// is IP explicitly blocked
-		if slices.Contains(excludedDomains, domainToCheck) {
+		if !s.CanAddDomain(domainToCheck) {
 			continue CheckDomains
-		}
-
-		// is IP implicitly blocked through CIDR
-		for _, excludedDomain := range excludedDomains {
-			if strings.HasSuffix(domainToCheck, "."+excludedDomain) {
-				continue CheckDomains
-			}
 		}
 
 		// is IP explicitly allowed
@@ -351,6 +350,37 @@ func (s *Scope) RootDomains() []string {
 
 func (s *Scope) AllDomains() []string {
 	return sortedScopeKeys(s.Domains)
+}
+func (s *Scope) CanAddIP(ipAddr net.IP) bool {
+	// is IP explicitly blocked
+	if slices.Contains(s.excludedIPAddrs, ipAddr.String()) {
+		return false
+	}
+
+	// is IP implicitly blocked through CIDR
+	for _, excludedCidr := range s.excludedCIDRs {
+		if excludedCidr.Contains(ipAddr) {
+			return false
+		}
+	}
+
+	return true
+}
+
+func (s *Scope) CanAddDomain(domainToCheck string) bool {
+	// is domain explicitly blocked
+	if slices.Contains(s.excludedHostnames, domainToCheck) {
+		return false
+	}
+
+	// is domain implicitly blocked via parent domain
+	for _, excludedDomain := range s.excludedHostnames {
+		if strings.HasSuffix(domainToCheck, "."+excludedDomain) {
+			return false
+		}
+	}
+
+	return true
 }
 
 func getExpandedCIDRSFromScopeMap(scopeMap map[string]bool, all bool) []net.IP {
