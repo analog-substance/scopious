@@ -38,6 +38,7 @@ func SetVersionInfo(versionStr, commitStr string) {
 				}
 			} else {
 				buildType = "go-remote"
+				commitStr = buildInfo.Main.Version
 			}
 		}
 	} else {
@@ -48,7 +49,7 @@ func SetVersionInfo(versionStr, commitStr string) {
 		fmt.Println(buildInfo)
 	}
 
-	RootCmd.Version = fmt.Sprintf("%s-%s (%s)", versionStr, commitStr, buildType)
+	RootCmd.Version = fmt.Sprintf("%s (%s@%s)", versionStr, buildType, commitStr)
 }
 
 // RootCmd represents the base command when called without any subcommands
