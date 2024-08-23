@@ -20,6 +20,7 @@ func SetVersionInfo(versionStr, commitStr string) {
 	buildInfo, ok := debug.ReadBuildInfo()
 	if ok {
 		for _, bv := range buildInfo.Settings {
+			log.Println(buildInfo.String())
 			if bv.Key == "vcs.revision" {
 				commitStr = bv.Value
 			}
