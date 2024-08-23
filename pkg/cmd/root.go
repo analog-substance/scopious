@@ -3,8 +3,11 @@ package cmd
 import (
 	"fmt"
 	"github.com/analog-substance/scopious/pkg/scopious"
+	"github.com/analog-substance/scopious/pkg/state"
 	"github.com/spf13/cobra"
+	"log"
 	"os"
+	"runtime/debug"
 
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
@@ -14,11 +17,24 @@ var cfgFile string
 var scoperInstance *scopious.Scoper
 
 func SetVersionInfo(versionStr, commitStr string) {
-	rootCmd.Version = fmt.Sprintf("%s-%s", versionStr, commitStr)
+	buildInfo, ok := debug.ReadBuildInfo()
+	if ok {
+		for _, bv := range buildInfo.Settings {
+			if bv.Key == "vcs.revision" {
+				commitStr = bv.Value
+			}
+		}
+
+		versionStr = buildInfo.Main.Version
+	} else {
+		log.Println("Version info not found in build info")
+	}
+
+	RootCmd.Version = fmt.Sprintf("%s-%s", versionStr, commitStr)
 }
 
-// rootCmd represents the base command when called without any subcommands
-var rootCmd = &cobra.Command{
+// RootCmd represents the base command when called without any subcommands
+var RootCmd = &cobra.Command{
 	Use:   "scopious",
 	Short: "Manage scope for your network based projects",
 	Long: `Scoper can help you manage the scope of network projects by:
@@ -66,7 +82,10 @@ list excluded things
 
 `,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-
+		debug := viper.GetBool("debug")
+		if debug {
+			state.Debug = true
+		}
 		scopeDir := viper.GetString("scope-dir")
 		scoperInstance = scopious.FromPath(scopeDir)
 	},
@@ -78,7 +97,7 @@ list excluded things
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	if err := rootCmd.Execute(); err != nil {
+	if err := RootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
@@ -91,24 +110,24 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.scopious.yaml)")
+	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.scopious.yaml)")
+	RootCmd.PersistentFlags().BoolP("debug", "d", false, "Debug mode")
 
-	rootCmd.PersistentFlags().String("scope-dir", "scope", "where scope files are located.")
-	rootCmd.PersistentFlags().StringP("scope", "s", scopious.DefaultScope, "Scope name")
+	RootCmd.PersistentFlags().String("scope-dir", "scope", "where scope files are located.")
+	RootCmd.PersistentFlags().StringP("scope", "s", scopious.DefaultScope, "Scope name")
 
 	//rootCmd.PersistentFlags().String("domains-file", "scope-domains.txt", "where in-scope domains are located.")
 	//rootCmd.PersistentFlags().String("ips-file", "scope-ips.txt", "where in-scope IP addresses are located.")
 	//rootCmd.PersistentFlags().String("ignore-domains", "ignore-scope-domains.txt", "where out-of-scope IP addresses are located.")
 	//rootCmd.PersistentFlags().String("ignore-ips", "ignore-scope-ips.txt", "where out-of-scope domains addresses are located.")
 
-	viper.BindPFlag("scope-dir", rootCmd.PersistentFlags().Lookup("scope-dir"))
+	viper.BindPFlag("scope-dir", RootCmd.PersistentFlags().Lookup("scope-dir"))
 	//viper.BindPFlag("ips-file", rootCmd.PersistentFlags().Lookup("ips-file"))
 	//viper.BindPFlag("ignore-domains", rootCmd.PersistentFlags().Lookup("ignore-domains"))
 	//viper.BindPFlag("ignore-ips", rootCmd.PersistentFlags().Lookup("ignore-ips"))
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
-	//rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
 // initConfig reads in config file and ENV variables if set.

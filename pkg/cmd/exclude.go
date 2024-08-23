@@ -8,8 +8,8 @@ import (
 	"os"
 )
 
-// excludeCmd represents the block command
-var excludeCmd = &cobra.Command{
+// ExcludeCmd represents the block command
+var ExcludeCmd = &cobra.Command{
 	Use:   "exclude",
 	Short: "Add an item to the exclude list",
 	Long: `Add items to to the exclude list.
@@ -49,7 +49,7 @@ in a CIDR is in scope.
 }
 
 func init() {
-	rootCmd.AddCommand(excludeCmd)
+	RootCmd.AddCommand(ExcludeCmd)
 
 	// Here you will define your flags and configuration settings.
 
@@ -59,5 +59,5 @@ func init() {
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	excludeCmd.Flags().BoolP("list", "l", false, "List excluded scope")
+	ExcludeCmd.Flags().BoolP("list", "l", false, "List excluded scope")
 }

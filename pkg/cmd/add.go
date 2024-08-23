@@ -8,8 +8,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// addCmd represents the add command
-var addCmd = &cobra.Command{
+// AddCmd represents the add command
+var AddCmd = &cobra.Command{
 	Use:   "add",
 	Short: "Add items to scope",
 	Long: `Add items to scope unless it has been excluded via scopius exclude. For example:
@@ -43,6 +43,6 @@ var addCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(addCmd)
-	addCmd.PersistentFlags().BoolP("all", "a", false, "show all addreses, even network and broadcast")
+	RootCmd.AddCommand(AddCmd)
+	AddCmd.PersistentFlags().BoolP("all", "a", false, "show all addresses, even network and broadcast")
 }

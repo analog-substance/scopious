@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var expandCmd = &cobra.Command{
+var ExpandCmd = &cobra.Command{
 	Use:   "expand",
 	Short: "Expand CIDRs",
 	Long: `Expand CIDRs. For example:
@@ -59,6 +59,6 @@ func processScopeLine(scopeLine string, all bool) {
 }
 
 func init() {
-	rootCmd.AddCommand(expandCmd)
-	expandCmd.PersistentFlags().BoolP("all", "a", false, "show all addreses, even network and broadcast")
+	RootCmd.AddCommand(ExpandCmd)
+	ExpandCmd.PersistentFlags().BoolP("all", "a", false, "show all addreses, even network and broadcast")
 }

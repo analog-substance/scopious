@@ -1,6 +1,8 @@
 package main
 
-import "github.com/analog-substance/scopious/internal/cmd"
+import (
+	"github.com/analog-substance/scopious/pkg/cmd"
+)
 
 var version = "v0.0.0"
 var commit = "replace"

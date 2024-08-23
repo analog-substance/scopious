@@ -5,8 +5,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// domainsCmd represents the domains command
-var domainsCmd = &cobra.Command{
+// DomainsCmd represents the domains command
+var DomainsCmd = &cobra.Command{
 	Use:   "domains",
 	Short: "Print out in scope domains",
 	Long: `Print out in scope domains. For example:
@@ -37,7 +37,7 @@ Print in scope root domains:
 }
 
 func init() {
-	rootCmd.AddCommand(domainsCmd)
+	RootCmd.AddCommand(DomainsCmd)
 
 	// Here you will define your flags and configuration settings.
 
@@ -47,5 +47,5 @@ func init() {
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	domainsCmd.Flags().BoolP("root-domains", "r", false, "Show only root domains")
+	DomainsCmd.Flags().BoolP("root-domains", "r", false, "Show only root domains")
 }

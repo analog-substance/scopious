@@ -9,8 +9,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// pruneCmd represents the check command
-var pruneCmd = &cobra.Command{
+// PruneCmd represents the check command
+var PruneCmd = &cobra.Command{
 	Use:   "prune",
 	Short: "Prune excluded scope items from input",
 	Long: `Prune excluded scope items from input
@@ -43,6 +43,6 @@ cat urls.txt | scopious prune
 }
 
 func init() {
-	rootCmd.AddCommand(pruneCmd)
-	pruneCmd.PersistentFlags().BoolP("all", "a", false, "show all addreses, even network and broadcast")
+	RootCmd.AddCommand(PruneCmd)
+	PruneCmd.PersistentFlags().BoolP("all", "a", false, "show all addreses, even network and broadcast")
 }

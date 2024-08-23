@@ -7,8 +7,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// ipsCmd represents the ips command
-var ipsCmd = &cobra.Command{
+// IpsCmd represents the ips command
+var IpsCmd = &cobra.Command{
 	Use:   "ips",
 	Short: "List IP addresses in scope",
 	Long: `List IP addresses in scope.
@@ -40,7 +40,7 @@ Expand CIDRs and remove excluded ips
 }
 
 func init() {
-	rootCmd.AddCommand(ipsCmd)
-	ipsCmd.Flags().BoolP("expand", "x", false, "Expand CIDRS and remove excluded things")
-	ipsCmd.PersistentFlags().BoolP("all", "a", false, "show all addreses, even network and broadcast")
+	RootCmd.AddCommand(IpsCmd)
+	IpsCmd.Flags().BoolP("expand", "x", false, "Expand CIDRS and remove excluded things")
+	IpsCmd.PersistentFlags().BoolP("all", "a", false, "show all addreses, even network and broadcast")
 }

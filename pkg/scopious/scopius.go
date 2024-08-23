@@ -12,7 +12,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/analog-substance/scopious/internal/state"
+	"github.com/analog-substance/scopious/pkg/state"
 	"github.com/analog-substance/scopious/pkg/utils"
 	"golang.org/x/net/publicsuffix"
 )
@@ -422,7 +422,16 @@ func normalizedScope(scopeItem string) string {
 	if err == nil {
 		// no errors, we have a URL
 		if len(parsedURL.Host) > 0 {
-			return strings.TrimSuffix(parsedURL.Hostname(), ".")
+			hostname := strings.TrimSuffix(parsedURL.Hostname(), ".")
+			_, err := publicsuffix.EffectiveTLDPlusOne(hostname)
+			if err == nil {
+				if state.Debug {
+					log.Println("hostname", hostname)
+				}
+				return hostname
+			} else {
+				log.Println("root domain err", err)
+			}
 		}
 	}
 
