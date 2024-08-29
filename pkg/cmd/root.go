@@ -4,53 +4,14 @@ import (
 	"fmt"
 	"github.com/analog-substance/scopious/pkg/scopious"
 	"github.com/analog-substance/scopious/pkg/state"
-	"github.com/spf13/cobra"
-	"log"
-	"os"
-	"runtime/debug"
-
 	homedir "github.com/mitchellh/go-homedir"
+	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"os"
 )
 
 var cfgFile string
 var scoperInstance *scopious.Scoper
-
-func SetVersionInfo(versionStr, commitStr string) {
-	buildInfo, ok := debug.ReadBuildInfo()
-	buildType := "unknown"
-	if ok {
-		if versionStr != "v0.0.0" {
-			// goreleaser must have set the version
-			// lets add gh to the end so we know this release came from github
-			buildType = "release"
-		} else {
-			// not a goreleaser build. lets grab build info from build settings
-			versionStr = buildInfo.Main.Version
-
-			if buildInfo.Main.Version == "(devel)" {
-				for _, bv := range buildInfo.Settings {
-					if bv.Key == "vcs.revision" {
-						commitStr = bv.Value[0:8]
-						buildType = "go-local"
-						break
-					}
-				}
-			} else {
-				buildType = "go-remote"
-				commitStr = buildInfo.Main.Version
-			}
-		}
-	} else {
-		log.Println("Version info not found in build info")
-	}
-
-	if os.Getenv("DEBUG_BUILD_INFO") == "1" {
-		fmt.Println(buildInfo)
-	}
-
-	RootCmd.Version = fmt.Sprintf("%s (%s@%s)", versionStr, buildType, commitStr)
-}
 
 // RootCmd represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
