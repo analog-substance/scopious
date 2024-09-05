@@ -35,7 +35,7 @@ scopious domains
 scopious ips -x
 ```
 
-![Scopious add](docs/images/scopius-add.gif)
+![Scopious add](docs/images/scopious-add.gif)
 
 ### Exclude
 
@@ -46,7 +46,7 @@ scopious exclude 127.0.0.1/30
 scopious ips -x
 ```
 
-![Scopious exclude](docs/images/scopius-exclude.gif)
+![Scopious exclude](docs/images/scopious-exclude.gif)
 
 ### Expand
 
@@ -55,7 +55,7 @@ Sometimes you don't want to add CIDRs to scope, but you need to expand them.
 ```bash
 echo 127.0.0.1/28 | scopious expand
 ```
-![Scopious expand](docs/images/scopius-expand.gif)
+![Scopious expand](docs/images/scopious-expand.gif)
 
 ## About
 
