@@ -17,8 +17,8 @@ import (
 	"golang.org/x/net/publicsuffix"
 )
 
-const DefaultScopeDir = "scope"
-const DefaultScope = "external"
+const DefaultScopeDir = "data"
+const DefaultScope = "default"
 const scopeFileIPv4 = "ipv4.txt"
 const scopeFileIPv6 = "ipv6.txt"
 const scopeFileDomains = "domains.txt"

@@ -90,7 +90,7 @@ func init() {
 	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.scopious.yaml)")
 	RootCmd.PersistentFlags().BoolP("debug", "d", false, "Debug mode")
 
-	RootCmd.PersistentFlags().String("scope-dir", "scope", "where scope files are located.")
+	RootCmd.PersistentFlags().String("scope-dir", scopious.DefaultScopeDir, "where scope files are located.")
 	RootCmd.PersistentFlags().StringP("scope", "s", scopious.DefaultScope, "Scope name")
 
 	//rootCmd.PersistentFlags().String("domains-file", "scope-domains.txt", "where in-scope domains are located.")

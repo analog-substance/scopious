@@ -3,3 +3,5 @@ test
 dist/
 scopiousscope/
 /scope/
+/data/
+.ssh
