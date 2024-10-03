@@ -88,7 +88,7 @@ func init() {
 	// will be global for your application.
 
 	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.scopious.yaml)")
-	RootCmd.PersistentFlags().BoolP("debug", "d", false, "Debug mode")
+	RootCmd.PersistentFlags().Bool("debug", false, "Debug mode")
 
 	RootCmd.PersistentFlags().String("scope-dir", scopious.DefaultScopeDir, "where scope files are located.")
 	RootCmd.PersistentFlags().StringP("scope", "s", scopious.DefaultScope, "Scope name")

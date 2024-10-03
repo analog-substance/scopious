@@ -25,7 +25,7 @@ func ReadLinesMap(path string) (map[string]bool, error) {
 	lines := map[string]bool{}
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		entry := scanner.Text()
+		entry := strings.ToLower(scanner.Text())
 		if entry != "" {
 			lines[entry] = true
 		}

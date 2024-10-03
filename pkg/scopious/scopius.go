@@ -79,13 +79,34 @@ func (scoper *Scoper) GetScope(scopeName string) *Scope {
 		return scope
 	}
 
-	err := os.Mkdir(filepath.Join(scoper.ScopeDir, scopeName), 0755)
+	scopeFile := scoper.GetScopePath(scopeName)
+	err := os.Mkdir(scopeFile, 0755)
 	if err != nil {
 		panic(err)
 	}
 
-	scoper.Scopes[scopeName] = NewScopeFromPath(filepath.Join(scoper.ScopeDir, scopeName))
+	scoper.Scopes[scopeName] = NewScopeFromPath(scopeFile)
 	return scoper.Scopes[scopeName]
+}
+
+func (scoper *Scoper) GetScopePath(scopeName string) string {
+	return filepath.Join(scoper.ScopeDir, scopeName)
+}
+
+func (scoper *Scoper) GetScopeExcludePath(scopeName string) string {
+	return filepath.Join(scoper.ScopeDir, scopeName, scopeFileExclude)
+}
+
+func (scoper *Scoper) GetScopeIPv4Path(scopeName string) string {
+	return filepath.Join(scoper.ScopeDir, scopeName, scopeFileIPv4)
+}
+
+func (scoper *Scoper) GetScopeIPv6Path(scopeName string) string {
+	return filepath.Join(scoper.ScopeDir, scopeName, scopeFileIPv6)
+}
+
+func (scoper *Scoper) GetScopeDomainsPath(scopeName string) string {
+	return filepath.Join(scoper.ScopeDir, scopeName, scopeFileDomains)
 }
 
 type Scope struct {
@@ -283,13 +304,13 @@ CheckDomains:
 			continue CheckDomains
 		}
 
-		// is IP explicitly allowed
+		// is domain explicitly allowed
 		if slices.Contains(includeDomains, domainToCheck) {
 			scopeCheckResults[domainToCheck] = true
 			continue CheckDomains
 		}
 
-		// is IP implicitly allowed through CIDR
+		// is domain implicitly allowed through CIDR
 		for _, includedDomain := range includeDomains {
 			if strings.HasSuffix(domainToCheck, "."+includedDomain) {
 				scopeCheckResults[domainToCheck] = true
@@ -324,7 +345,7 @@ CheckDomains:
 	for prunedRes, _ := range prunedResultsMap {
 		prunedResults = append(prunedResults, prunedRes)
 	}
-	sort.Strings(prunedResults)
+	//sort.Strings(prunedResults)
 	return prunedResults
 }
 
