@@ -2,29 +2,31 @@ package utils
 
 import "net"
 
-func GetAllIPs(cidr string, all bool) ([]net.IP, error) {
+func GetAllIPs(cidr string, all bool) ([]*net.IP, error) {
 	ip, ipnet, err := net.ParseCIDR(cidr)
+	allIPs := []*net.IP{}
 	if err != nil {
 		ip = net.ParseIP(cidr)
 		if ip != nil {
-			return []net.IP{ip}, nil
+			allIPs = append(allIPs, &ip)
+			return allIPs, nil
 		}
 		return nil, err
 	}
 
-	var ips []net.IP
 	for ip := ip.Mask(ipnet.Mask); ipnet.Contains(ip); inc(ip) {
-		ips = append(ips, net.ParseIP(ip.String()))
+		parsedIp := net.ParseIP(ip.String())
+		allIPs = append(allIPs, &parsedIp)
 	}
-	if len(ips) == 1 {
-		return ips, nil
+	if len(allIPs) == 1 {
+		return allIPs, nil
 	}
 
 	if all {
-		return ips, nil
+		return allIPs, nil
 	}
 	// else remove network address and broadcast address
-	return ips[1 : len(ips)-1], nil
+	return allIPs[1 : len(allIPs)-1], nil
 }
 
 func inc(ip net.IP) {

@@ -19,30 +19,26 @@ cat urls.txt | scopious prune
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		scopeName, _ := cmd.Flags().GetString("scope")
-		all, _ := cmd.Flags().GetBool("all")
 		scope := scoperInstance.GetScope(scopeName)
 
-		scopeToCheck := []string{}
+		scopePrinted := map[string]bool{}
 		scanner := bufio.NewScanner(os.Stdin)
 		for scanner.Scan() {
 			scopeLine := scanner.Text()
-			scopeToCheck = append(scopeToCheck, scopeLine)
+			if scope.IsInScope(scopeLine) {
+				if _, ok := scopePrinted[scopeLine]; !ok {
+					scopePrinted[scopeLine] = true
+					fmt.Println(scopeLine)
+				}
+			}
 		}
 
 		if scanner.Err() != nil {
 			log.Printf("STDIN scanner encountered an error: %s", scanner.Err())
-		}
-		prunedScope := scope.Prune(all, scopeToCheck...)
-
-		//sort.Strings(prunedScope)
-
-		for _, scopeLine := range prunedScope {
-			fmt.Println(scopeLine)
 		}
 	},
 }
 
 func init() {
 	RootCmd.AddCommand(PruneCmd)
-	PruneCmd.PersistentFlags().BoolP("all", "a", false, "show all addreses, even network and broadcast")
 }
