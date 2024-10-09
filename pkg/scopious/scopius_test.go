@@ -283,7 +283,7 @@ func TestScope_Prune(t *testing.T) {
 				"10.42.0.3",
 				"console.inscope.tld",
 				"api.stillinscope.inscope.tld",
-				"2001:0db8:0000:0000:0000:ff00:0042:8329",
+				"2001:db8::ff00:42:8329",
 				"https://admin.stillinscope.inscope.tld:8443/garbage.html",
 			},
 		},

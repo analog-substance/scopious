@@ -125,17 +125,14 @@ type Scope struct {
 
 func NewScopeFromPath(path string) *Scope {
 	return &Scope{
-		Path:              path,
-		IPv4:              map[string]bool{},
-		IPv6:              map[string]bool{},
-		Domains:           map[string]bool{},
-		Excludes:          map[string]bool{},
-		inScopeCIDRs:      map[string]*net.IPNet{},
-		excludedCIDRs:     map[string]*net.IPNet{},
-		excludedIPAddrs:   map[string]bool{},
-		excludedHostnames: map[string]bool{},
-		rootDomainMap:     map[string]bool{},
-		rootDomainSorted:  []string{},
+		Path:     path,
+		IPv4:     map[string]bool{},
+		IPv6:     map[string]bool{},
+		Domains:  map[string]bool{},
+		Excludes: map[string]bool{},
+
+		rootDomainMap:    map[string]bool{},
+		rootDomainSorted: []string{},
 	}
 }
 
@@ -275,6 +272,11 @@ func (s *Scope) IsIPInScope(ip *net.IP, mustBeInScope bool) bool {
 	if ip == nil {
 		return false
 	}
+
+	if s.excludedCIDRs == nil {
+		s.populateExcludes()
+	}
+
 	// exclude takes precedence
 	for _, excludeCIDR := range s.excludedCIDRs {
 		if excludeCIDR.Contains(*ip) {
@@ -294,6 +296,11 @@ func (s *Scope) IsIPInScope(ip *net.IP, mustBeInScope bool) bool {
 	if ok {
 		return true
 	}
+
+	if s.inScopeCIDRs == nil {
+		s.populateIncludes()
+	}
+
 	for _, inScopeCIDR := range s.inScopeCIDRs {
 		if inScopeCIDR.Contains(*ip) {
 			return true
@@ -302,10 +309,20 @@ func (s *Scope) IsIPInScope(ip *net.IP, mustBeInScope bool) bool {
 	return false
 }
 
+func (s *Scope) getExcludedHostNames() map[string]bool {
+
+	return s.excludedHostnames
+}
+
 func (s *Scope) IsDomainInScope(domain string, mustBeInScope bool) bool {
 	if domain == "" {
 		return false
 	}
+
+	if s.excludedHostnames == nil {
+		s.populateExcludes()
+	}
+
 	_, ok := s.excludedHostnames[domain]
 	if ok {
 		return false
@@ -337,18 +354,23 @@ func (s *Scope) IsDomainInScope(domain string, mustBeInScope bool) bool {
 
 func (s *Scope) Prune(all bool, scopeItemsToCheck ...string) []string {
 	scopeCheckResults := map[string]bool{}
-	expandedIPs, ipAddrsToCheck, domainStrsToCheck := normalizeAndExpandStringSlice(scopeItemsToCheck, all)
 
-	scopeItemsToCheck = append(scopeItemsToCheck, expandedIPs...)
-	for _, ipAddr := range ipAddrsToCheck {
-		if s.IsIPInScope(ipAddr, true) {
-			scopeCheckResults[ipAddr.String()] = true
+	for _, scopeToCheck := range scopeItemsToCheck {
+		normalized := normalizedScope(scopeToCheck)
+		if normalized == "" {
+			continue
 		}
-	}
-
-	for _, domainToCheck := range domainStrsToCheck {
-		if s.IsDomainInScope(domainToCheck, true) {
-			scopeCheckResults[domainToCheck] = true
+		ipAddrs, err := utils.GetAllIPs(normalized, all)
+		if err == nil {
+			for _, expandedIP := range ipAddrs {
+				if s.IsIPInScope(expandedIP, true) {
+					scopeCheckResults[expandedIP.String()] = true
+				}
+			}
+		} else {
+			if s.IsInScope(normalized) {
+				scopeCheckResults[scopeToCheck] = true
+			}
 		}
 	}
 
@@ -389,6 +411,7 @@ func (s *Scope) AllIPs() []string {
 
 func (s *Scope) RootDomains() []string {
 	if len(s.rootDomainMap) == 0 {
+		s.rootDomainMap = make(map[string]bool)
 		for domain, _ := range s.Domains {
 			rootDomain, err := publicsuffix.EffectiveTLDPlusOne(domain)
 			if err != nil {
@@ -443,15 +466,16 @@ func normalizedScope(scopeItem string) string {
 		// no errors, we have a URL
 		if len(parsedURL.Host) > 0 {
 			hostname := strings.TrimSuffix(parsedURL.Hostname(), ".")
-			_, err := publicsuffix.EffectiveTLDPlusOne(hostname)
-			if err == nil {
-				if state.Debug {
-					log.Println("hostname", hostname)
-				}
-				return hostname
-			} else {
-				log.Println("root domain err", err)
-			}
+			return hostname
+			//_, err := publicsuffix.EffectiveTLDPlusOne(hostname)
+			//if err == nil {
+			//	if state.Debug {
+			//		log.Println("hostname", hostname)
+			//	}
+			//	return hostname
+			//} else {
+			//	log.Println("root domain err", err)
+			//}
 		}
 	}
 
@@ -482,12 +506,17 @@ func normalizeAndExpandStringSlice(scopeItemsToCheck []string, all bool) (expand
 }
 
 func (s *Scope) populateIncludes() {
-
+	s.inScopeCIDRs = map[string]*net.IPNet{}
 	s.populateInScopeCIDRs(s.IPv4)
 	s.populateInScopeCIDRs(s.IPv6)
 }
 
 func (s *Scope) populateExcludes() {
+
+	s.excludedCIDRs = map[string]*net.IPNet{}
+	s.excludedIPAddrs = map[string]bool{}
+	s.excludedHostnames = map[string]bool{}
+
 	for scopeItem, _ := range s.Excludes {
 		_, ok := s.excludedCIDRs[scopeItem]
 		if !ok {
