@@ -375,7 +375,7 @@ func (s *Scope) Prune(all bool, scopeItemsToCheck ...string) []string {
 	}
 
 	prunedResults := []string{}
-	for prunedRes, _ := range scopeCheckResults {
+	for prunedRes := range scopeCheckResults {
 		prunedResults = append(prunedResults, prunedRes)
 	}
 	return prunedResults
@@ -412,7 +412,7 @@ func (s *Scope) AllIPs() []string {
 func (s *Scope) RootDomains() []string {
 	if len(s.rootDomainMap) == 0 {
 		s.rootDomainMap = make(map[string]bool)
-		for domain, _ := range s.Domains {
+		for domain := range s.Domains {
 			rootDomain, err := publicsuffix.EffectiveTLDPlusOne(domain)
 			if err != nil {
 				log.Println("root domain err", err)
@@ -517,7 +517,7 @@ func (s *Scope) populateExcludes() {
 	s.excludedIPAddrs = map[string]bool{}
 	s.excludedHostnames = map[string]bool{}
 
-	for scopeItem, _ := range s.Excludes {
+	for scopeItem := range s.Excludes {
 		_, ok := s.excludedCIDRs[scopeItem]
 		if !ok {
 			_, ipNet, err := net.ParseCIDR(scopeItem)
@@ -542,7 +542,7 @@ func (s *Scope) populateExcludes() {
 
 func getCIDRsIPsHostname(scopeMap map[string]bool) (cidrs []*net.IPNet, ipAddrs []string, hostnames []string) {
 
-	for scopeItem, _ := range scopeMap {
+	for scopeItem := range scopeMap {
 		_, ipNet, err := net.ParseCIDR(scopeItem)
 		if err == nil {
 			cidrs = append(cidrs, ipNet)
@@ -562,7 +562,7 @@ func getCIDRsIPsHostname(scopeMap map[string]bool) (cidrs []*net.IPNet, ipAddrs 
 
 func sortedScopeKeys(mapWithStringKeys map[string]bool) []string {
 	keys := []string{}
-	for key, _ := range mapWithStringKeys {
+	for key := range mapWithStringKeys {
 		keys = append(keys, key)
 	}
 	sort.Strings(keys)

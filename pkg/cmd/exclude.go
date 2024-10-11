@@ -25,7 +25,7 @@ in a CIDR is in scope.
 		scope := scoperInstance.GetScope(scopeName)
 
 		if shouldList {
-			for excluded, _ := range scope.Excludes {
+			for excluded := range scope.Excludes {
 				fmt.Println(excluded)
 			}
 			return
