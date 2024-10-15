@@ -2,7 +2,7 @@ package scopious
 
 import (
 	"fmt"
-	"github.com/analog-substance/util/file_utils"
+	"github.com/analog-substance/util/fileutil"
 	"log"
 	"net"
 	"net/url"
@@ -146,28 +146,28 @@ func (s *Scope) Load() {
 	for _, dirEntry := range dirs {
 		if !dirEntry.IsDir() {
 			if dirEntry.Name() == scopeFileIPv4 {
-				s.IPv4, err = file_utils.ReadLowerLineMap(filepath.Join(s.Path, scopeFileIPv4))
+				s.IPv4, err = fileutil.ReadLowerLineMap(filepath.Join(s.Path, scopeFileIPv4))
 				if err != nil {
 					panic(err)
 				}
 			}
 
 			if dirEntry.Name() == scopeFileIPv6 {
-				s.IPv6, err = file_utils.ReadLowerLineMap(filepath.Join(s.Path, scopeFileIPv6))
+				s.IPv6, err = fileutil.ReadLowerLineMap(filepath.Join(s.Path, scopeFileIPv6))
 				if err != nil {
 					panic(err)
 				}
 			}
 
 			if dirEntry.Name() == scopeFileDomains {
-				s.Domains, err = file_utils.ReadLowerLineMap(filepath.Join(s.Path, scopeFileDomains))
+				s.Domains, err = fileutil.ReadLowerLineMap(filepath.Join(s.Path, scopeFileDomains))
 				if err != nil {
 					panic(err)
 				}
 			}
 
 			if dirEntry.Name() == scopeFileExclude {
-				s.Excludes, err = file_utils.ReadLowerLineMap(filepath.Join(s.Path, scopeFileExclude))
+				s.Excludes, err = fileutil.ReadLowerLineMap(filepath.Join(s.Path, scopeFileExclude))
 				if err != nil {
 					panic(err)
 				}
@@ -180,22 +180,22 @@ func (s *Scope) Load() {
 }
 
 func (s *Scope) Save() {
-	err := file_utils.WriteLowerUniqueLines(filepath.Join(s.Path, scopeFileIPv4), sortedScopeKeys(s.IPv4))
+	err := fileutil.WriteLowerUniqueLines(filepath.Join(s.Path, scopeFileIPv4), sortedScopeKeys(s.IPv4))
 	if err != nil && state.Debug {
 		log.Println("error saving IPv4:", err)
 	}
 
-	err = file_utils.WriteLowerUniqueLines(filepath.Join(s.Path, scopeFileIPv6), sortedScopeKeys(s.IPv6))
+	err = fileutil.WriteLowerUniqueLines(filepath.Join(s.Path, scopeFileIPv6), sortedScopeKeys(s.IPv6))
 	if err != nil && state.Debug {
 		log.Println("error saving IPv6:", err)
 	}
 
-	err = file_utils.WriteLowerUniqueLines(filepath.Join(s.Path, scopeFileDomains), sortedScopeKeys(s.Domains))
+	err = fileutil.WriteLowerUniqueLines(filepath.Join(s.Path, scopeFileDomains), sortedScopeKeys(s.Domains))
 	if err != nil && state.Debug {
 		log.Println("error saving Domains:", err)
 	}
 
-	err = file_utils.WriteLowerUniqueLines(filepath.Join(s.Path, scopeFileExclude), sortedScopeKeys(s.Excludes))
+	err = fileutil.WriteLowerUniqueLines(filepath.Join(s.Path, scopeFileExclude), sortedScopeKeys(s.Excludes))
 	if err != nil && state.Debug {
 		log.Println("error saving Excludes:", err)
 	}
