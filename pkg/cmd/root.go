@@ -68,7 +68,18 @@ list excluded things
 	},
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
-	//	Run: func(cmd *cobra.Command, args []string) { },
+	Run: func(cmd *cobra.Command, args []string) {
+		scopeName, _ := cmd.Flags().GetString("scope")
+
+		scope := scoperInstance.GetScope(scopeName)
+
+		for _, ip := range scope.AllIPs() {
+			fmt.Println(ip)
+		}
+		for _, domain := range scope.AllDomains() {
+			fmt.Println(domain)
+		}
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.

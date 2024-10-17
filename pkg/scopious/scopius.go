@@ -412,17 +412,30 @@ func (s *Scope) AllIPs() []string {
 
 func (s *Scope) RootDomains() []string {
 	if len(s.rootDomainMap) == 0 {
-		s.rootDomainMap = make(map[string]bool)
-		for domain := range s.Domains {
-			rootDomain, err := publicsuffix.EffectiveTLDPlusOne(domain)
-			if err != nil {
-				log.Println("root domain err", err)
-			}
-			s.rootDomainMap[rootDomain] = true
-		}
+		s.rootDomainMap = s.GetRootDomainMap(true)
 		s.rootDomainSorted = sortedScopeKeys(s.rootDomainMap)
 	}
 	return s.rootDomainSorted
+}
+
+func (s *Scope) GetRootDomainMap(checkInScope bool) map[string]bool {
+	rootDomainMap := make(map[string]bool)
+	for domain := range s.Domains {
+		rootDomain, err := publicsuffix.EffectiveTLDPlusOne(domain)
+		if err != nil {
+			log.Println("root domain err", err)
+			continue
+		}
+		if !checkInScope || s.IsDomainInScope(rootDomain, false) {
+			rootDomainMap[rootDomain] = true
+		}
+	}
+	return rootDomainMap
+}
+
+func (s *Scope) GetRootDomainSlice(checkInScope bool) []string {
+	rootDomainMap := s.GetRootDomainMap(checkInScope)
+	return sortedScopeKeys(rootDomainMap)
 }
 
 func (s *Scope) AllDomains() []string {

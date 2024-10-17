@@ -21,30 +21,35 @@ Print in scope root domains:
 	Run: func(cmd *cobra.Command, args []string) {
 		scopeName, _ := cmd.Flags().GetString("scope")
 		showRootDomains, _ := cmd.Flags().GetBool("root-domains")
+		allRootDomains, _ := cmd.Flags().GetBool("all-root-domains")
 		totals, _ := cmd.Flags().GetBool("totals")
 		withSuffix, _ := cmd.Flags().GetString("suffix")
 		scope := scoperInstance.GetScope(scopeName)
 
 		var domains []string
 
-		if showRootDomains {
+		if allRootDomains {
+			domains = scope.GetRootDomainSlice(false)
+		} else if showRootDomains {
 			domains = scope.RootDomains()
-			if totals {
-				totalMap := map[string]int{}
-				allDomains := scope.AllDomains()
-				for _, rootDomain := range domains {
-					for _, domain := range allDomains {
-						if strings.HasSuffix(domain, rootDomain) {
-							totalMap[rootDomain]++
-						}
-					}
-				}
-				for rootDomain, count := range totalMap {
-					fmt.Println(rootDomain, count)
-				}
-			}
 		} else {
 			domains = scope.AllDomains()
+		}
+
+		if totals && (allRootDomains || showRootDomains) {
+			totalMap := map[string]int{}
+			allDomains := scope.AllDomains()
+			for _, rootDomain := range domains {
+				for _, domain := range allDomains {
+					if strings.HasSuffix(domain, rootDomain) {
+						totalMap[rootDomain]++
+					}
+				}
+			}
+			for rootDomain, count := range totalMap {
+				fmt.Println(rootDomain, count)
+			}
+			return
 		}
 
 		for _, domain := range domains {
@@ -75,6 +80,7 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	DomainsCmd.Flags().BoolP("root-domains", "r", false, "Show only root domains")
+	DomainsCmd.Flags().Bool("all-root-domains", false, "Show only root domains ignore scope")
 	DomainsCmd.Flags().StringP("suffix", "S", "", "Show only domains with suffix")
 	DomainsCmd.Flags().BoolP("totals", "t", false, "Show totals for root domains and suffix")
 }
