@@ -23,17 +23,25 @@ var ExpandCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		all, _ := cmd.Flags().GetBool("all")
+		public, _ := cmd.Flags().GetBool("public")
+		private, _ := cmd.Flags().GetBool("private")
+
+		if public && private {
+			// silly, that is the same as the default...
+			public = false
+			private = false
+		}
 
 		if len(args) > 0 {
 			for _, scopeLine := range args {
-				processScopeLine(scopeLine, all)
+				processScopeLine(scopeLine, all, public, private)
 			}
 		} else {
 			// no args, lets read from stdin
 			scanner := bufio.NewScanner(os.Stdin)
 			for scanner.Scan() {
 				scopeLine := scanner.Text()
-				processScopeLine(scopeLine, all)
+				processScopeLine(scopeLine, all, public, private)
 			}
 
 			if scanner.Err() != nil {
@@ -43,7 +51,7 @@ var ExpandCmd = &cobra.Command{
 	},
 }
 
-func processScopeLine(scopeLine string, all bool) {
+func processScopeLine(scopeLine string, all, public, private bool) {
 	if strings.Contains(scopeLine, "/") {
 		// perhaps we have a CIDR
 		ips, err := utils.GetAllIPs(scopeLine, all)
@@ -53,12 +61,16 @@ func processScopeLine(scopeLine string, all bool) {
 		}
 
 		for _, ip := range ips {
-			fmt.Println(ip.String())
+			if (public && !ip.IsPrivate()) || (private && ip.IsPrivate()) || (!public && !private) {
+				fmt.Println(ip.String())
+			}
 		}
 	}
 }
 
 func init() {
 	RootCmd.AddCommand(ExpandCmd)
-	ExpandCmd.PersistentFlags().BoolP("all", "a", false, "show all addreses, even network and broadcast")
+	ExpandCmd.PersistentFlags().BoolP("all", "a", false, "show all addresses, even network and broadcast")
+	ExpandCmd.PersistentFlags().Bool("public", false, "Only return public IPs")
+	ExpandCmd.PersistentFlags().Bool("private", false, "Only return private IPs")
 }
