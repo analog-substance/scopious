@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"log"
+	"net"
 	"os"
 	"strings"
 
@@ -64,6 +65,13 @@ func processScopeLine(scopeLine string, all, public, private bool) {
 			if (public && !ip.IsPrivate()) || (private && ip.IsPrivate()) || (!public && !private) {
 				fmt.Println(ip.String())
 			}
+		}
+	}
+
+	ip := net.ParseIP(scopeLine)
+	if ip != nil {
+		if (public && !ip.IsPrivate()) || (private && ip.IsPrivate()) || (!public && !private) {
+			fmt.Println(ip.String())
 		}
 	}
 }
